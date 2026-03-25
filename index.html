@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anshika Birthday</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{
+  background:linear-gradient(135deg,#ffd6e8,#e0c3fc,#c2f0ff);
+  text-align:center;
+  overflow-x:hidden;
+}
+
+/* Background particles */
+canvas{
+  position:fixed;
+  top:0;left:0;
+  z-index:-1;
+}
+
+/* Container */
+.container{padding:40px 20px;}
+
+h1{font-size:2.3rem;}
+.subtitle{margin-bottom:25px;opacity:0.8;}
+
+/* Countdown */
+.countdown{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin:20px 0;
+}
+.time-box{
+  background:rgba(255,255,255,0.6);
+  padding:15px;
+  border-radius:15px;
+  min-width:70px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.1);
+}
+.time-box span{font-size:1.4rem;font-weight:600;}
+
+/* Buttons */
+button{
+  padding:12px 18px;
+  border:none;
+  border-radius:25px;
+  background:linear-gradient(45deg,#ff8ac6,#8ec5fc);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+  margin:10px;
+}
+button:hover{
+  transform:scale(1.07);
+  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Gallery */
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;
+  margin-top:30px;
+}
+.gallery img{
+  width:100%;
+  border-radius:15px;
+}
+
+/* Modal */
+.modal{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  background:rgba(0,0,0,0.6);
+}
+.modal-content{
+  background:white;
+  padding:20px;
+  border-radius:20px;
+}
+
+/* Puzzle */
+.puzzle{
+  display:grid;
+  grid-template-columns:repeat(3,100px);
+  gap:5px;
+  margin:20px auto;
+}
+.tile{
+  width:100px;
+  height:100px;
+  background-image: url('anshika.jpg');
+  background-size:300px 300px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:0.25s;
+}
+.empty{
+  background:none;
+  cursor:default;
+}
+
+/* Victory */
+.victory{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:white;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  padding:20px;
+}
+#messageText{margin-top:15px;max-width:600px;}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="container">
+  <h1>Countdown to Anshika’s Day 🎉</h1>
+  <p class="subtitle">BBW’s birthday is almost here 😄</p>
+
+  <div class="countdown" id="countdown"></div>
+
+  <button onclick="openPuzzle()">Unlock Surprise 🧩</button>
+  <button onclick="toggleMusic()">🎵 Music</button>
+
+  <div class="gallery">
+    <img src="anshika.jpg">
+    <img src="anshika2.jpg">
+    <img src="fanshika3.jpg">
+  </div>
+
+  <div id="finalMessage" style="display:none;margin-top:20px;">
+    🎂 Happy Birthday Anshika! Hope you have the best day ever 😄
+  </div>
+</div>
+
+<!-- Puzzle -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h2>Solve the Puzzle 🧩</h2>
+    <p id="moves">Moves: 0</p>
+    <div class="puzzle" id="puzzle"></div>
+  </div>
+</div>
+
+<!-- Victory -->
+<div class="victory" id="victory">
+  <h2>🎉 You Did It!</h2>
+  <p id="messageText"></p>
+  <button onclick="closeVictory()">Close</button>
+</div>
+
+<div id="yt-player" style="display:none;"></div>
+<script src="https://www.youtube.com/iframe_api"></script>
+<audio id="winSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7fdf2f6c1c.mp3"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+// Countdown
+const birthday = new Date("April 12, 2026 00:00:00").getTime();
+
+setInterval(()=>{
+  const now=new Date().getTime();
+  const diff=birthday-now;
+
+  if(diff<=0){
+    document.getElementById("finalMessage").style.display="block";
+    return;
+  }
+
+  const d=Math.floor(diff/(1000*60*60*24));
+  const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  const m=Math.floor((diff%(1000*60*60))/(1000*60));
+  const s=Math.floor((diff%(1000*60))/1000);
+
+  document.getElementById("countdown").innerHTML=`
+  <div class="time-box"><span>${d}</span>Days</div>
+  <div class="time-box"><span>${h}</span>Hours</div>
+  <div class="time-box"><span>${m}</span>Min</div>
+  <div class="time-box"><span>${s}</span>Sec</div>`;
+},1000);
+
+// Puzzle
+let tiles=[];
+let moves=0;
+
+function openPuzzle(){
+  document.getElementById("modal").style.display="flex";
+  createPuzzle();
+}
+
+function createPuzzle(){
+  tiles=[...Array(9).keys()];
+
+  do{
+    tiles.sort(()=>Math.random()-0.5);
+  }while(isSolved(tiles));
+
+  moves=0;
+  document.getElementById("moves").innerText="Moves: 0";
+
+  render();
+}
+
+function render(){
+  const puzzle=document.getElementById("puzzle");
+  puzzle.innerHTML="";
+
+  tiles.forEach((val,i)=>{
+    const div=document.createElement("div");
+    div.classList.add("tile");
+
+    if(val===8){
+      div.classList.add("empty");
+    }else{
+		const x = (val % 3) * 100;
+		const y = Math.floor(val / 3) * 100;
+		div.style.backgroundPosition = `-${x}px -${y}px`; 	   }
+
+    div.onclick=()=>move(i);
+    puzzle.appendChild(div);
+  });
+}
+
+function move(i){
+  const empty=tiles.indexOf(8);
+  const valid=[i-1,i+1,i-3,i+3];
+
+  if(valid.includes(empty)){
+    [tiles[i],tiles[empty]]=[tiles[empty],tiles[i]];
+    moves++;
+    document.getElementById("moves").innerText="Moves: "+moves;
+
+    if(navigator.vibrate) navigator.vibrate(30);
+
+    render();
+    checkWin();
+  }
+}
+
+function isSolved(arr){
+  return arr.every((v,i)=>v===i);
+}
+
+function checkWin(){
+  if(isSolved(tiles)){
+    document.getElementById("winSound").play();
+
+    confetti({particleCount:150,spread:90,origin:{y:0.6}});
+
+    showVictory();
+  }
+}
+
+function showVictory(){
+  document.getElementById("victory").style.display="flex";
+
+  const msg=`It’s funny how everything started on that GC, with me trolling you and calling you my padosi who knew that random moment would turn into such a real and close friendship? From those silly chats to actually caring about each other, we’ve come a long way. You’ve become someone I genuinely enjoy talking to, someone who makes even normal conversations feel special. I’m really glad we met like that, even if it started as a joke. On your special day, I just want to say I appreciate you a lot and I’m lucky to have you as a friend`;
+
+  let i=0;
+  const el=document.getElementById("messageText");
+  el.innerHTML="";
+
+  const typing=setInterval(()=>{
+    el.innerHTML+=msg.charAt(i);
+    i++;
+    if(i>=msg.length) clearInterval(typing);
+  },20);
+}
+
+function closeVictory(){
+  document.getElementById("victory").style.display="none";
+}
+
+// Music
+function toggleMusic(){
+  if(!player || typeof player.playVideo !== "function"){
+    alert("Music loading... click again in a second 🎵");
+    return;
+  }
+
+  if(!isPlaying){
+    player.playVideo();
+    isPlaying = true;
+  } else {
+    player.pauseVideo();
+    isPlaying = false;
+  }
+}
+// Background particles
+const canvas=document.getElementById("bg");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let p=[];
+for(let i=0;i<60;i++){
+  p.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*3});
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  p.forEach(pt=>{
+    pt.y-=0.5;
+    if(pt.y<0) pt.y=canvas.height;
+    ctx.beginPath();
+    ctx.arc(pt.x,pt.y,pt.r,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,0.6)";
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>

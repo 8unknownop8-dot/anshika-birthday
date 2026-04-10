@@ -328,7 +328,9 @@ const bgMusic = new Audio("New folder/Teri Gand mein danda de song # Sohrt.mp3")
 function toggleMusic(){
   if(!isPlaying){
     bgMusic.loop = true;
-    bgMusic.play();
+    bgMusic.play().catch(err => {
+      console.log("Music blocked:", err);
+    });
     isPlaying = true;
   } else {
     bgMusic.pause();

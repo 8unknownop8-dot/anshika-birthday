@@ -212,11 +212,12 @@ function showBirthdayScreen(){
   });
 }
 function showVideo(){
-  // 🔴 STOP birthday music FIRST
+  // 🔴 STOP & REMOVE birthday music completely
   const music = document.getElementById("birthdayMusic");
   if(music){
     music.pause();
     music.currentTime = 0;
+    music.src = "";   // 🔥 removes audio completely
   }
 
   // Hide birthday screen
@@ -225,7 +226,7 @@ function showVideo(){
   // Show video screen
   document.getElementById("videoScreen").style.display = "flex";
 
-  // Play video
+  // Play video only
   const vid = document.getElementById("myVideo");
   if(vid){
     vid.play().catch(()=>{});

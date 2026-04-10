@@ -202,28 +202,30 @@ function showBirthdayScreen(){
   document.querySelector(".container").style.display = "none";
   document.getElementById("birthdayScreen").style.display = "flex";
 
-  // Confetti
   confetti({particleCount:200,spread:120,origin:{y:0.6}});
 
-  // Play music
   const music = document.getElementById("birthdayMusic");
-  if(music){
-    music.play().catch(()=>{});
-  }
+
+  // Try autoplay
+  music.play().catch(()=>{
+    console.log("Autoplay blocked — waiting for user click");
+  });
 }
 function showVideo(){
-  // 🔴 STOP birthday music
+  // 🔴 STOP birthday music FIRST
   const music = document.getElementById("birthdayMusic");
   if(music){
     music.pause();
-    music.currentTime = 0; // optional (restart if played again)
+    music.currentTime = 0;
   }
+
   // Hide birthday screen
   document.getElementById("birthdayScreen").style.display = "none";
 
-  // Show video
+  // Show video screen
   document.getElementById("videoScreen").style.display = "flex";
 
+  // Play video
   const vid = document.getElementById("myVideo");
   if(vid){
     vid.play().catch(()=>{});

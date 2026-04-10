@@ -177,7 +177,7 @@ button:hover{
 
 <script>
 // Countdown
-const birthday = new Date("April 12, 2026 00:00:00").getTime();
+const birthday = new Date().getTime() + 3000;
 setInterval(()=>{
   const now=new Date().getTime();
   const diff=birthday-now;
